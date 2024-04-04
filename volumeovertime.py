@@ -45,24 +45,28 @@ def get_str_stock_date_array(data):
         print(date)
     return stock_dates_string_array
 
+def draw_the_curve(period_start, period_end, symbols):
+    db_url = get_db_url()
+    for s in symbols:
+        data = get_stock_volume_by_time_period(db_url, period_start, period_end, s)
+        x = get_str_stock_date_array(data.curr_stock_date)
+        y = get_str_stock_volume_array(data.stock_volume)
+        plt.plot(x, y)
 
 def main():
-    db_url = get_db_url()
-    data = get_stock_volume_by_time_period(db_url, "2024-03-01", "2024-04-01", "SYMB")
-    x = get_str_stock_date_array(data.curr_stock_date)
-    y = get_str_stock_volume_array(data.stock_volume)
+    symbols = ["SYMB1", "SYMB2", "SYMB3"]
+    draw_the_curve("2024-01-01", "2024-04-01",symbols)
 
     font1 = {'family': 'serif', 'color': 'blue', 'size': 20}
     font2 = {'family': 'serif', 'color': 'darkred', 'size': 15}
     plt.title("Stock Volume Data", fontdict=font1)
     plt.xlabel("Stock Date", fontdict=font2)
     plt.ylabel("Volume", fontdict=font2)
-    plt.ticklabel_format(useOffset=False)
     plt.grid()
     plt.xticks(rotation=45)
     plt.gca().yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
 
-    plt.plot(x, y)
+    plt.legend(symbols, loc="lower right")
     plt.show()
 
 
