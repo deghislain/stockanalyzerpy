@@ -48,7 +48,7 @@ def get_str_stock_date_array(data):
 
 def main():
     db_url = get_db_url()
-    data = get_stock_volume_by_time_period(db_url, "2024-03-01", "2024-04-01", "IBM")
+    data = get_stock_volume_by_time_period(db_url, "2024-03-01", "2024-04-01", "SYMB")
     x = get_str_stock_date_array(data.curr_stock_date)
     y = get_str_stock_volume_array(data.stock_volume)
 
@@ -63,7 +63,6 @@ def main():
     plt.gca().yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
 
     plt.plot(x, y)
-    #plt.gcf().autofmt_xdate()
     plt.show()
 
 
