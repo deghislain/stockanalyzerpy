@@ -26,6 +26,8 @@ def get_db_url():
 
 
 def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, param, frequency):
+    global title
+    title = "Stock " + param + " data"
     if frequency == "weekly":
         table = "av_weekly_stock_data"
     else:
@@ -36,18 +38,17 @@ def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, par
     return df
 
 
-def get_str_stock_volume_array(data):
-    stock_volumes_string_array = []
-    for v in data:
-        stock_volumes_string_array.append(v)
-    return stock_volumes_string_array
+def get_str_stock_data_array(data):
+    stock_data_string_array = []
+    for d in data:
+        stock_data_string_array.append(d)
+    return stock_data_string_array
 
 
 def get_str_stock_date_array(data):
     stock_dates_string_array = []
     for date in data:
         stock_dates_string_array.append(date.strftime("%d-%m-%Y"))
-        print(date)
     return stock_dates_string_array
 
 
@@ -56,7 +57,16 @@ def draw_the_curve(period_start, period_end, symbols, param, frequence):
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param, frequence)
         x = get_str_stock_date_array(data.curr_stock_date)
-        y = get_str_stock_volume_array(data.stock_volume)
+        if param == "volume":
+            y = get_str_stock_data_array(data.stock_volume)
+        if param == "open":
+            y = get_str_stock_data_array(data.stock_open)
+        if param == "close":
+            y = get_str_stock_data_array(data.stock_close)
+        if param == "high":
+            y = get_str_stock_data_array(data.stock_high)
+        if param == "low":
+            y = get_str_stock_data_array(data.stock_low)
         plt.plot(x, y)
 
 
@@ -65,7 +75,7 @@ def main(symbols, param, frequence, period_start, period_end):
 
     font1 = {'family': 'serif', 'color': 'blue', 'size': 20}
     font2 = {'family': 'serif', 'color': 'darkred', 'size': 15}
-    plt.title("Stock Volume Data", fontdict=font1)
+    plt.title(title, fontdict=font1)
     plt.xlabel("Stock Date", fontdict=font2)
     plt.ylabel("Volume", fontdict=font2)
     plt.grid()
@@ -89,11 +99,11 @@ if __name__ == "__main__":
         if symbol != "0" and symbol != "":
             print("Add another stock symbol or press 0 to continue")
 
-    print("Now enter a parameter for your analyse e.g price or volume")
+    print("Now enter a parameter for your analyse e.g open,close or volume")
     while True:
         param = str(input())
-        if (param != "price" and param != "volume") or param == "":
-            print("Invalid parameter for stock analyse try again e.g price or volume")
+        if (param != "open" and param != "close" and param != "volume") or param == "":
+            print("Invalid parameter for stock analyse try again e.g open,close volume")
         else:
             break
 
