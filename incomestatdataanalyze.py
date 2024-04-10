@@ -23,59 +23,40 @@ def get_db_url():
     )
     return PG_URL
 
-def get_column_by_parameter(param):
-    column_name = ""
-    if param == "operating":
-        column_name = "stock_operating_income"
-    if param == "gross":
-        column_name = "stock_gross_profit"
-    if param == "total":
-        column_name = "stock_total_revenue"
-    if param == "research":
-        column_name = "stock_resh_and_dev"
-    if param == "net":
-        column_name = "stock_net_income"
-
-    return column_name
-
 
 def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, param):
     global title
     title = "Stock " + param + " data"
-    column = get_column_by_parameter(param)
-    sql = "SELECT " + column + ", stock_fiscale_date FROM income_stat_stock_data WHERE stock_fiscale_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by stock_fiscale_date"
+    sql = "SELECT *FROM income_stat_stock_data WHERE stock_fiscale_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by stock_fiscale_date"
     engine = db.create_engine(PG_URL, echo=True)
     df = pd.read_sql_query(sql, engine)
     return df
-
-def get_str_stock_data_array(data):
-    stock_data_string_array = []
-    for d in data:
-        stock_data_string_array.append(d)
-    return stock_data_string_array
-
-def get_str_stock_date_array(data):
-    stock_dates_string_array = []
-    for date in data:
-        stock_dates_string_array.append(date.strftime("%d-%m-%Y"))
-    return stock_dates_string_array
-
 
 def draw_the_curve(period_start, period_end, symbols, param):
     db_url = get_db_url()
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param)
-        x = get_str_stock_date_array(data.stock_fiscale_date)
+        dates = data[['stock_fiscale_date']]
+        x = []
+        y = []
+        for date in dates.index:
+            x.append(dates.stock_fiscale_date[date].strftime("%d-%m-%Y"))
+
         if param == "operating":
-            y = get_str_stock_data_array(data.stock_operating_income)
+            for v in data[['stock_operating_income']].index:
+                y.append(data[['stock_operating_income']].stock_operating_income[v])
         if param == "gross":
-            y = get_str_stock_data_array(data.stock_gross_profit)
+            for v in data[['stock_gross_profit']].index:
+                y.append(data[['stock_gross_profit']].stock_gross_profit[v])
         if param == "total":
-            y = get_str_stock_data_array(data.stock_total_revenue)
+            for v in data[['stock_total_revenue']].index:
+                y.append(data[['stock_total_revenue']].stock_total_revenue[v])
         if param == "research":
-            y = get_str_stock_data_array(data.stock_resh_and_dev)
+            for v in data[['stock_resh_and_dev']].index:
+                y.append(data[['stock_resh_and_dev']].stock_resh_and_dev[v])
         if param == "net":
-            y = get_str_stock_data_array(data.stock_net_income)
+            for v in data[['stock_net_income']].index:
+                y.append(data[['stock_net_income']].stock_net_income[v])
         plt.plot(x, y)
 
 def main(symbols, param,  period_start, period_end):

@@ -49,7 +49,6 @@ def draw_the_curve(period_start, period_end, symbols, param, frequence):
         y = []
         for date in dates.index:
             x.append(dates.curr_stock_date[date].strftime("%d-%m-%Y"))
-        column = ''
         if param == "volume":
             for v in data[['stock_volume']].index:
                 y.append(data[['stock_volume']].stock_volume[v])
