@@ -32,41 +32,41 @@ def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, par
         table = "av_weekly_stock_data"
     else:
         table = "av_daily_stock_data"
-    sql = "SELECT stock_" + param + ", curr_stock_date FROM " + table + " WHERE curr_stock_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by curr_stock_date"
+    sql = "SELECT *FROM " + table + " WHERE curr_stock_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by curr_stock_date"
     engine = db.create_engine(PG_URL, echo=True)
     df = pd.read_sql_query(sql, engine)
     return df
 
 
-def get_str_stock_data_array(data):
-    stock_data_string_array = []
-    for d in data:
-        stock_data_string_array.append(d)
-    return stock_data_string_array
-
-
-def get_str_stock_date_array(data):
-    stock_dates_string_array = []
-    for date in data:
-        stock_dates_string_array.append(date.strftime("%d-%m-%Y"))
-    return stock_dates_string_array
-
 
 def draw_the_curve(period_start, period_end, symbols, param, frequence):
+    global p
     db_url = get_db_url()
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param, frequence)
-        x = get_str_stock_date_array(data.curr_stock_date)
+        dates =  data[['curr_stock_date']]
+        x = []
+        y = []
+        for date in dates.index:
+            x.append(dates.curr_stock_date[date].strftime("%d-%m-%Y"))
+        column = ''
         if param == "volume":
-            y = get_str_stock_data_array(data.stock_volume)
+            for v in data[['stock_volume']].index:
+                y.append(data[['stock_volume']].stock_volume[v])
         if param == "open":
-            y = get_str_stock_data_array(data.stock_open)
+            for v in data[['stock_open']].index:
+                y.append(data[['stock_open']].stock_open[v])
         if param == "close":
-            y = get_str_stock_data_array(data.stock_close)
+            for v in data[['stock_close']].index:
+                y.append(data[['stock_close']].stock_close[v])
         if param == "high":
-            y = get_str_stock_data_array(data.stock_high)
+            for v in data[['stock_high']].index:
+                y.append(data[['stock_high']].stock_high[v])
         if param == "low":
-            y = get_str_stock_data_array(data.stock_low)
+            for v in data[['stock_low']].index:
+                y.append(data[['stock_low']].stock_low[v])
+
+
         plt.plot(x, y)
 
 
