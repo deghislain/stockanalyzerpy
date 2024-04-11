@@ -9,6 +9,9 @@ from colorama import Fore
 import re
 
 
+
+
+
 def get_db_url():
     load_dotenv()
     PG_USERNAME = os.getenv('PG_USERNAME')
@@ -25,51 +28,35 @@ def get_db_url():
     return PG_URL
 
 
-def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, param, frequency):
+def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, param):
     global title
     title = "Stock " + param + " data"
-    if frequency == "weekly":
-        table = "av_weekly_stock_data"
-    else:
-        table = "av_daily_stock_data"
-    sql = "SELECT *FROM " + table + " WHERE curr_stock_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by curr_stock_date"
+    sql = "SELECT *FROM stock_generic_info_data WHERE stock_fiscale_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by stock_fiscale_date"
     engine = db.create_engine(PG_URL, echo=True)
     df = pd.read_sql_query(sql, engine)
     return df
 
 
 
-def draw_the_curve(period_start, period_end, symbols, param, frequence):
+
+def draw_the_curve(period_start, period_end, symbols, param):
     db_url = get_db_url()
     for s in symbols:
-        data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param, frequence)
-        dates =  data[['curr_stock_date']]
+        data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param)
+        dates =  data[['stock_fiscale_date']]
         x = []
         y = []
         for date in dates.index:
-            x.append(dates.curr_stock_date[date].strftime("%d-%m-%Y"))
-        if param == "volume":
-            for v in data[['stock_volume']].index:
-                y.append(data[['stock_volume']].stock_volume[v])
-        if param == "open":
-            for v in data[['stock_open']].index:
-                y.append(data[['stock_open']].stock_open[v])
-        if param == "close":
-            for v in data[['stock_close']].index:
-                y.append(data[['stock_close']].stock_close[v])
-        if param == "high":
-            for v in data[['stock_high']].index:
-                y.append(data[['stock_high']].stock_high[v])
-        if param == "low":
-            for v in data[['stock_low']].index:
-                y.append(data[['stock_low']].stock_low[v])
-
+            x.append(dates.stock_fiscale_date[date].strftime("%d-%m-%Y"))
+        if param == "earning":
+            for v in data[['stock_reported_eps']].index:
+                y.append(data[['stock_reported_eps']].stock_reported_eps[v])
 
         plt.plot(x, y)
 
 
-def main(symbols, param, frequence, period_start, period_end):
-    draw_the_curve(period_start, period_end, symbols, param, frequence)
+def main(symbols, param, period_start, period_end):
+    draw_the_curve(period_start, period_end, symbols, param)
 
     font1 = {'family': 'serif', 'color': 'blue', 'size': 20}
     font2 = {'family': 'serif', 'color': 'darkred', 'size': 15}
@@ -82,6 +69,7 @@ def main(symbols, param, frequence, period_start, period_end):
 
     plt.legend(symbols, loc="lower right")
     plt.show()
+
 
 
 if __name__ == "__main__":
@@ -97,19 +85,11 @@ if __name__ == "__main__":
         if symbol != "0" and symbol != "":
             print("Add another stock symbol or press 0 to continue")
 
-    print("Now enter a parameter for your analyse e.g open,close or volume")
+    print("Now enter a parameter for your analyse e.g earning")
     while True:
         param = str(input())
-        if (param != "open" and param != "close" and param != "volume") or param == "":
-            print("Invalid parameter for stock analyse try again e.g open,close volume")
-        else:
-            break
-
-    print("Now enter a frequency for your analyse e.g daily or weekly")
-    while True:
-        freq = str(input())
-        if (freq != "daily" and freq != "weekly") or freq == "":
-            print("Invalid frequency for stock analyse try again e.g daily or weekly")
+        if (param != "earning") or param == "":
+            print("Invalid parameter for stock analyse try again e.g earning")
         else:
             break
 
@@ -130,4 +110,4 @@ if __name__ == "__main__":
         else:
             break
 
-    main(symbols, param, freq, period_start, period_end)
+    main(symbols, param, period_start, period_end)
