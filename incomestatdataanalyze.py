@@ -7,6 +7,7 @@ from matplotlib import ticker
 from dotenv import load_dotenv
 from colorama import Fore
 import re
+import stockutils as utility
 
 def get_db_url():
     load_dotenv()
@@ -23,7 +24,6 @@ def get_db_url():
     )
     return PG_URL
 
-
 def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, param):
     global title
     title = "Stock " + param + " data"
@@ -36,27 +36,9 @@ def draw_the_curve(period_start, period_end, symbols, param):
     db_url = get_db_url()
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param)
-        dates = data[['stock_fiscale_date']]
-        x = []
-        y = []
-        for date in dates.index:
-            x.append(dates.stock_fiscale_date[date].strftime("%d-%m-%Y"))
-
-        if param == "operating":
-            for v in data[['stock_operating_income']].index:
-                y.append(data[['stock_operating_income']].stock_operating_income[v])
-        if param == "gross":
-            for v in data[['stock_gross_profit']].index:
-                y.append(data[['stock_gross_profit']].stock_gross_profit[v])
-        if param == "total":
-            for v in data[['stock_total_revenue']].index:
-                y.append(data[['stock_total_revenue']].stock_total_revenue[v])
-        if param == "research":
-            for v in data[['stock_resh_and_dev']].index:
-                y.append(data[['stock_resh_and_dev']].stock_resh_and_dev[v])
-        if param == "net":
-            for v in data[['stock_net_income']].index:
-                y.append(data[['stock_net_income']].stock_net_income[v])
+        x = data.iloc[:, 2].astype(str).tolist()
+        index = utility.get_column_name(data, param)
+        y = data.iloc[:, index].tolist()
         plt.plot(x, y)
 
 def main(symbols, param,  period_start, period_end):

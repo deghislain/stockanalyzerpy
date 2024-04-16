@@ -43,14 +43,8 @@ def draw_the_curve(period_start, period_end, symbols, param):
     db_url = get_db_url()
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param)
-        dates =  data[['stock_fiscale_date']]
-        x = []
-        y = []
-        for date in dates.index:
-            x.append(dates.stock_fiscale_date[date].strftime("%d-%m-%Y"))
-        if param == "earning":
-            for v in data[['stock_reported_eps']].index:
-                y.append(data[['stock_reported_eps']].stock_reported_eps[v])
+        x = data.iloc[:,2].astype(str).tolist()
+        y = data.iloc[:,3].tolist()
 
         plt.plot(x, y)
 

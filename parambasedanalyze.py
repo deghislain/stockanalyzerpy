@@ -7,7 +7,7 @@ from matplotlib import ticker
 from dotenv import load_dotenv
 from colorama import Fore
 import re
-
+import stockutils as utility
 
 def get_db_url():
     load_dotenv()
@@ -32,7 +32,7 @@ def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, par
         table = "av_weekly_stock_data"
     else:
         table = "av_daily_stock_data"
-    sql = "SELECT *FROM " + table + " WHERE curr_stock_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by curr_stock_date"
+    sql = "SELECT * FROM " + table + " WHERE curr_stock_date BETWEEN \'" + period_start + "\' AND \'" + period_end + "\' AND stock_symbol = \'" + symbol + "\' order by curr_stock_date"
     engine = db.create_engine(PG_URL, echo=True)
     df = pd.read_sql_query(sql, engine)
     return df
@@ -43,27 +43,9 @@ def draw_the_curve(period_start, period_end, symbols, param, frequence):
     db_url = get_db_url()
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param, frequence)
-        dates =  data[['curr_stock_date']]
-        x = []
-        y = []
-        for date in dates.index:
-            x.append(dates.curr_stock_date[date].strftime("%d-%m-%Y"))
-        if param == "volume":
-            for v in data[['stock_volume']].index:
-                y.append(data[['stock_volume']].stock_volume[v])
-        if param == "open":
-            for v in data[['stock_open']].index:
-                y.append(data[['stock_open']].stock_open[v])
-        if param == "close":
-            for v in data[['stock_close']].index:
-                y.append(data[['stock_close']].stock_close[v])
-        if param == "high":
-            for v in data[['stock_high']].index:
-                y.append(data[['stock_high']].stock_high[v])
-        if param == "low":
-            for v in data[['stock_low']].index:
-                y.append(data[['stock_low']].stock_low[v])
-
+        index = utility.get_column_name(data, param)
+        x = data.iloc[:, 2].astype(str).tolist()
+        y = data.iloc[:, index].tolist()
 
         plt.plot(x, y)
 

@@ -7,6 +7,7 @@ from matplotlib import ticker
 from dotenv import load_dotenv
 from colorama import Fore
 import re
+import stockutils as utility
 
 
 def get_db_url():
@@ -38,34 +39,9 @@ def draw_the_curve(period_start, period_end, symbols, param):
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param)
         dates = data[['stock_fiscale_date']]
-        x = []
-        y = []
-        for date in dates.index:
-            x.append(dates.stock_fiscale_date[date].strftime("%d-%m-%Y"))
-        if param == "equity":
-            for v in data[['total_shareholder_equity']].index:
-                y.append(data[['total_shareholder_equity']].total_shareholder_equity[v])
-        if param == "assets":
-            for v in data[['total_assets']].index:
-                y.append(data[['total_assets']].total_assets[v])
-        if param == "cash":
-            for v in data[['cash_short_term_investments']].index:
-                y.append(data[['cash_short_term_investments']].cash_short_term_investments[v])
-        if param == "inventory":
-            for v in data[['inventory']].index:
-                y.append(data[['inventory']].inventory[v])
-        if param == "investments":
-            for v in data[['investments']].index:
-                y.append(data[['investments']].investments[v])
-        if param == "liabilities":
-            for v in data[['total_liabilities']].index:
-                y.append(data[['total_liabilities']].total_liabilities[v])
-        if param == "debt":
-            for v in data[['current_debt']].index:
-                y.append(data[['current_debt']].current_debt[v])
-        if param == "linvestments":
-            for v in data[['long_term_investments']].index:
-                y.append(data[['long_term_investments']].long_term_investments[v])
+        x = data.iloc[:, 2].astype(str).tolist()
+        index = utility.get_column_name(data, param)
+        y = data.iloc[:, index].tolist()
         plt.plot(x, y)
 
 

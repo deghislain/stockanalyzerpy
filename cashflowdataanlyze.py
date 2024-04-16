@@ -7,6 +7,7 @@ from matplotlib import ticker
 from dotenv import load_dotenv
 from colorama import Fore
 import re
+import stockutils as utility
 
 def get_db_url():
     load_dotenv()
@@ -31,43 +32,15 @@ def get_stock_param_by_time_period(PG_URL, period_start, period_end, symbol, par
     df = pd.read_sql_query(sql, engine)
     return df
 
+
 def draw_the_curve(period_start, period_end, symbols, param):
     db_url = get_db_url()
     for s in symbols:
         data = get_stock_param_by_time_period(db_url, period_start, period_end, s, param)
-        dates = data[['stock_fiscale_date']]
-        x = []
-        y = []
-        for date in dates.index:
-            x.append(dates.stock_fiscale_date[date].strftime("%d-%m-%Y"))
+        index = utility.get_column_name(data, param)
+        x = data.iloc[:, 2].astype(str).tolist()
+        y = data.iloc[:, index].tolist()
 
-        if param == "inventory":
-            for v in data[['change_inventory']].index:
-                y.append(data[['change_inventory']].change_inventory[v])
-        if param == "profit":
-            for v in data[['profit_loss']].index:
-                y.append(data[['profit_loss']].profit_loss[v])
-        if param == "dividend":
-            for v in data[['dividend_payout']].index:
-                y.append(data[['dividend_payout']].dividend_payout[v])
-        if param == "capital":
-            for v in data[['capital_expenditure']].index:
-                y.append(data[['capital_expenditure']].capital_expenditure[v])
-        if param == "investment":
-            for v in data[['cash_from_investment']].index:
-                y.append(data[['cash_from_investment']].cash_from_investment[v])
-        if param == "financing":
-            for v in data[['cash_from_financing']].index:
-                y.append(data[['cash_from_financing']].cash_from_financing[v])
-        if param == "liabilities":
-            for v in data[['change_op_liabilities']].index:
-                y.append(data[['change_op_liabilities']].change_op_liabilities[v])
-        if param == "assets":
-            for v in data[['change_op_assets']].index:
-                y.append(data[['change_op_assets']].change_op_assets[v])
-        if param == "operating":
-            for v in data[['operating_cash_flow']].index:
-                y.append(data[['operating_cash_flow']].operating_cash_flow[v])
         plt.plot(x, y)
 
 def main(symbols, param,  period_start, period_end):
